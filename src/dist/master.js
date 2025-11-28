@@ -1,16 +1,13 @@
-// Return the URL of a path that is relative to the current script's location.
-const getModulePath = (path) => 'https://raw.githubusercontent.com/mrhotmadm/schoology-export/refs/heads/main/' + path.replace('./', '');
+// Return the path relative to the current script's location
+const getModulePath = (path) => path.replace('./', '');
 
 const loadModule = async (url, isRawURL = false) => {
-    const codeString = await fetch(isRawURL ? url : getModulePath(url)).then(response => response.text());
-
-    // Turn string into a Blob and get an object URL
-    const blob = new Blob([codeString], { type: 'text/javascript' });
-    const objectURL = URL.createObjectURL(blob);
+    // When using local files, we can import them directly instead of fetching
+    const modulePath = isRawURL ? url : getModulePath(url);
     
-    const fetchedModule = await import(objectURL);
-    URL.revokeObjectURL(objectURL);
-
+    // Import the module directly from the file system
+    const fetchedModule = await import(modulePath);
+    
     return fetchedModule;
 };
 

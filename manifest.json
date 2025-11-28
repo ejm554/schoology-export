@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Schoology Export",
+  "version": "1.0",
+  "description": "Export materials from Schoology courses",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["*://*.schoology.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.schoology.com/*"],
+      "js": ["src/dist/master.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/*.js", "node_modules/**/*"],
+      "matches": ["*://*.schoology.com/*"]
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "default_title": "Schoology Export"
+  }
+}

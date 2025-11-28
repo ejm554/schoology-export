@@ -18,5 +18,8 @@
   "license": "MIT",
   "author": "azharr",
   "type": "commonjs",
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "client-zip": "^2.5.0"
+  }
 }
