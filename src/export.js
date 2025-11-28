@@ -1,5 +1,9 @@
 const clientZip = window.clientZip || {};
 (async () => {
+    // Use local dependency instead of CDN
+
+    // We still need to use a CDN for browser environments,
+    // but you can download this file and serve it locally if needed
     const { downloadZip } = await import('https://cdn.jsdelivr.net/npm/client-zip/index.js');
     clientZip.downloadZip = downloadZip;
 })();
@@ -12,7 +16,9 @@ export default async ({ name, materialData }) => {
         
         for (const material of materials) {
             const { type, title: name, href, downloadLink: url, ext: extension, children, images } = material;
-    
+            
+            console.log("TYPE FOR EJM: ", type) // Return info for debugging
+
             if (type === 'document') { // Doesn't necessarily have to be a literal document; it's just Schoology's classification.
                 files.push({
                     name: `${directory}${name}.${extension}`, input: await fetch(url),
