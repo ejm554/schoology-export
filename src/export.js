@@ -1,10 +1,7 @@
 const clientZip = window.clientZip || {};
 (async () => {
     // Use local dependency instead of CDN
-
-    // We still need to use a CDN for browser environments,
-    // but you can download this file and serve it locally if needed
-    const { downloadZip } = await import('https://cdn.jsdelivr.net/npm/client-zip/index.js');
+    const { downloadZip } = await import('/node_modules/client-zip/index.js');
     clientZip.downloadZip = downloadZip;
 })();
 
@@ -15,10 +12,7 @@ export default async ({ name, materialData }) => {
         if (!Array.isArray(materials)) return;
         
         for (const material of materials) {
-            const { type, title: name, href, downloadLink: url, ext: extension, children, images } = material;
-            
-            console.log("TYPE FOR EJM: ", type) // Return info for debugging
-
+            const { type, title: name, href, downloadLink: url, ext: extension, children, images, content } = material;
             if (type === 'document') { // Doesn't necessarily have to be a literal document; it's just Schoology's classification.
                 files.push({
                     name: `${directory}${name}.${extension}`, input: await fetch(url),
@@ -45,7 +39,8 @@ export default async ({ name, materialData }) => {
                 });
                 
                 console.log(`[schoology-export] Adding embedded page: ${name} (${href}) in directory: ${directory}`);
-            } else if (type === 'page') {
+            } else if (type === 'page') { 
+                console.log("EJM content: ", content)
                 if (!content) continue;
                 if (images.length > 0) {
                     const normalizerRegex = /[^a-zA-Z0-9]/g;
