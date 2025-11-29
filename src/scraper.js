@@ -1,3 +1,16 @@
+// Sanitize folder/file names to remove filesystem-unsafe characters
+const sanitizeName = (name) => {
+    if (!name) return name;
+    return name
+        .replace(/:/g, '-')
+        .replace(/\//g, '-')
+        .replace(/\\/g, '-')
+        .replace(/\|/g, '-')
+        .replace(/[<>]/g, '-')
+        .replace(/[*?]/g, '-')
+        .replace(/"/g, "'");
+};
+
 // import { fetchPageHTML } from './util';
 export default async (util, selector = '#course-profile-materials-folders tbody') => {
     console.log('[schoology-export] Scraper initialized.');
@@ -27,7 +40,9 @@ export const scrapeFolder = async (folderMaterialList, { fetchPageHTML, extractE
         );
 
         const materialData = {
-            type, title: titleElement?.innerText.trimEnd(), href: titleElement?.href,
+            type, 
+            title: sanitizeName(titleElement?.innerText.trimEnd()), 
+            href: titleElement?.href,
         };
 
         // Handle pages (simple HTML extraction)
