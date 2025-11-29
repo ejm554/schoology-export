@@ -126,7 +126,7 @@ https://docs.google.com/..."></textarea>
                 console.log(`[${now}] [${elapsed}s] DEBUG: window.open() called, setting timeout...`);
                 
                 assignmentIndex++;
-                setTimeout(openNextAssignment, 5000);
+                setTimeout(openNextAssignment, 15000); // pause in milliseconds
             } else {
                 console.log(`[${now}] [${elapsed}s] DEBUG: All done! Total time: ${elapsed}s`);
                 document.getElementById('assignmentStatus').textContent = 
@@ -169,7 +169,7 @@ https://docs.google.com/..."></textarea>
                 console.log(`[${now}] [${elapsed}s] DEBUG: window.open() called, setting timeout...`);
                 
                 linkIndex++;
-                setTimeout(openNextLink, 5000);
+                setTimeout(openNextLink, 15000); // pause in milliseconds
             } else {
                 console.log(`[${now}] [${elapsed}s] DEBUG: All done! Total time: ${elapsed}s`);
                 document.getElementById('linkStatus').textContent = 
