@@ -1,7 +1,7 @@
 const clientZip = window.clientZip || {};
 (async () => {
-    // Use local dependency instead of CDN
-    const { downloadZip } = await import('/node_modules/client-zip/index.js');
+    // Import from CDN for browser compatibility
+    const { downloadZip } = await import('https://cdn.jsdelivr.net/npm/client-zip@2.4.0/index.js');
     clientZip.downloadZip = downloadZip;
 })();
 
@@ -12,6 +12,7 @@ export default async ({ name, materialData }) => {
         if (!Array.isArray(materials)) return;
         
         for (const material of materials) {
+
             const { type, title: name, href, downloadLink: url, ext: extension, children, images, content } = material;
             if (type === 'document') { // Doesn't necessarily have to be a literal document; it's just Schoology's classification.
                 files.push({
@@ -40,8 +41,11 @@ export default async ({ name, materialData }) => {
                 
                 console.log(`[schoology-export] Adding embedded page: ${name} (${href}) in directory: ${directory}`);
             } else if (type === 'page') { 
-                console.log("EJM content: ", content)
-                if (!content) continue;
+                console.log("EJM content: ", content) // For debugging & testing
+                if (!content || !material.content) {
+                    console.warn(`[schoology-export] Page "${name}" has no content, skipping.`);
+                    continue;
+                }
                 if (images.length > 0) {
                     const normalizerRegex = /[^a-zA-Z0-9]/g;
                     const schoologyRegex = /^https:\/\/(?:[a-zA-Z0-9-]+\.)?schoology\.com/; 
