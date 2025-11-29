@@ -21,7 +21,7 @@ export default async ({ name, materialData }) => {
                     name: `${directory}${name}.${extension}`, input: await fetch(url),
                 });
 
-                manifestItems.push({ type, name: `${name}.${extension}`, directory, status: 'exported' });
+                manifestItems.push({ type, name: `${name}.${extension}`, directory, status: 'exported', url: url });
 
                 console.log(`[schoology-export] Adding document: ${name} (${url}) in directory: ${directory}`);
             } else if (type === 'folder') {
@@ -35,7 +35,7 @@ export default async ({ name, materialData }) => {
                     input: new Blob([`[InternetShortcut]\nURL=${href}`], { type: 'text/plain' }),
                 });
             
-                manifestItems.push({ type, name: `${name}.url`, directory, status: 'exported' });
+                manifestItems.push({ type, name: `${name}.url`, directory, status: 'exported', url: href });
 
                 console.log(`[schoology-export] Adding link: ${name} (${href}) in directory: ${directory}`);
             } else if (type === 'embedded_page') {
@@ -45,8 +45,8 @@ export default async ({ name, materialData }) => {
                     input: new Blob([`<html><head><title>${name}</title></head><body><iframe src="${href}" style="width:100%; height:100%;"></iframe></body></html>`], { type: 'text/html' }),
                 });
 
-                manifestItems.push({ type, name: `${name}.html`, directory, status: 'exported' });
-
+                manifestItems.push({ type, name: `${name}.html`, directory, status: 'exported', url: href });
+                
                 console.log(`[schoology-export] Adding embedded page: ${name} (${href}) in directory: ${directory}`);
             } else if (type === 'page') { 
                 console.log("EJM content: ", content) // For debugging & testing
@@ -82,7 +82,7 @@ export default async ({ name, materialData }) => {
                     input: new Blob([`<html><head><title>${name}</title></head><body>${material.content}</body></html>`], { type: 'text/html' }),
                 });
 
-                manifestItems.push({ type, name: `${name}.html`, directory, status: 'exported' });
+                manifestItems.push({ type, name: `${name}.html`, directory, status: 'exported', url: href });
 
                 console.log(`[schoology-export] Adding page: ${name} (${href}) in directory: ${directory}`);
             
@@ -94,7 +94,7 @@ export default async ({ name, materialData }) => {
                     input: new Blob([`[InternetShortcut]\nURL=${href}`], { type: 'text/plain' }),
                 });
 
-                manifestItems.push({ type, name, directory, status: 'limited-access' });
+                manifestItems.push({ type, name, directory, status: 'limited-access', url: href });
 
                 console.log(`[schoology-export] Adding ${type} link: ${name} (${href}) in directory: ${directory}`);
 
@@ -106,27 +106,31 @@ export default async ({ name, materialData }) => {
 
     await accumulateFiles(materialData);
 
-    // Generate manifest
-    let manifestContent = `# Course Export Manifest\n\nGenerated: ${new Date().toISOString()}\n\n`;
+    // Generate manifest CSV
+    let csvContent = 'Path,Filename,Type,URL,Access Note\n';
 
-    const exported = manifestItems.filter(i => i.status === 'exported');
-    const limited = manifestItems.filter(i => i.status === 'limited-access');
-
-    manifestContent += `## Successfully Exported Files (${exported.length})\n\n`;
-    exported.forEach(item => {
-        manifestContent += `- [${item.type.toUpperCase()}] ${item.directory}${item.name}\n`;
+    // Sort by path, then filename
+    manifestItems.sort((a, b) => {
+        const pathA = a.directory || '/';
+        const pathB = b.directory || '/';
+        if (pathA !== pathB) return pathA.localeCompare(pathB);
+        return a.name.localeCompare(b.name);
     });
 
-    manifestContent += `\n## Limited Access Items (${limited.length})\n`;
-    manifestContent += `*These items require Schoology login and may stop working after losing course access*\n\n`;
-    limited.forEach(item => {
-        const prefix = item.type === 'assignment' ? '[ASSIGNMENT]' : '[OTHER]';
-        manifestContent += `- ⚠️  ${item.directory}${prefix} ${item.name}.url\n`;
+    manifestItems.forEach(item => {
+        const path = item.directory ? `/${item.directory}` : '/';
+        const accessNote = (item.type === 'document' || item.type === 'page') ? 'Offline' : 'May require Schoology access';
+        const url = item.url || '';
+        
+        // Escape quotes in CSV fields
+        const escapeCsv = (field) => `"${String(field).replace(/"/g, '""')}"`;
+        
+        csvContent += `${escapeCsv(path)},${escapeCsv(item.name)},${escapeCsv(item.type.toUpperCase())},${escapeCsv(url)},${escapeCsv(accessNote)}\n`;
     });
 
     files.push({
-        name: '_MANIFEST.md',
-        input: new Blob([manifestContent], { type: 'text/plain' })
+        name: '_MANIFEST.csv',
+        input: new Blob([csvContent], { type: 'text/csv' })
     });
 
     const zippedFiles = await clientZip.downloadZip(files).blob();
